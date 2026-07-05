@@ -235,16 +235,16 @@ export function getCardLabel(card: Card): string {
 export function getColorClass(color: CardColor): string {
   switch (color) {
     case 'red':
-      return 'bg-gradient-to-br from-red-600 to-red-800 text-white border-red-400';
+      return 'bg-gradient-to-br from-red-500 via-red-700 to-red-950 text-white border-[#F3E5AB]';
     case 'blue':
-      return 'bg-gradient-to-br from-blue-600 to-blue-800 text-white border-blue-400';
+      return 'bg-gradient-to-br from-blue-500 via-blue-700 to-blue-950 text-white border-[#F3E5AB]';
     case 'green':
-      return 'bg-gradient-to-br from-emerald-600 to-emerald-800 text-white border-emerald-400';
+      return 'bg-gradient-to-br from-emerald-500 via-emerald-700 to-emerald-950 text-white border-[#F3E5AB]';
     case 'yellow':
-      return 'bg-gradient-to-br from-amber-400 to-amber-600 text-slate-900 border-amber-300';
+      return 'bg-gradient-to-br from-yellow-300 via-amber-500 to-orange-700 text-[#1A0E04] border-[#F3E5AB]';
     case 'wild':
-      return 'bg-gradient-to-br from-slate-800 via-indigo-950 to-slate-900 text-amber-300 border-yellow-500/50';
+      return 'bg-gradient-to-br from-slate-950 via-indigo-950 to-black text-[#F3E5AB] border-[#D4AF37]';
     default:
-      return 'bg-slate-700 text-white border-slate-500';
+      return 'bg-gradient-to-br from-slate-700 to-slate-950 text-white border-[#F3E5AB]';
   }
 }

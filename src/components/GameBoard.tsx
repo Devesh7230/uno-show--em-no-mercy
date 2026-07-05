@@ -504,7 +504,7 @@ export default function GameBoard({
                 return (
                   <div
                     key={card.id}
-                    className="absolute transition-transform duration-150"
+                    className="hand-card-slot absolute transition-transform duration-150"
                     style={{
                       left: `calc(50% - 40px + ${(idx - (localPlayer.cards.length - 1) / 2) * Math.min(22, 280 / localPlayer.cards.length)}px)`,
                       zIndex: 30 + idx,

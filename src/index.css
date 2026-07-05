@@ -73,6 +73,11 @@
   height: 140px;
 }
 
+.hand-card-slot:hover,
+.hand-card-slot:focus-within {
+  z-index: 999 !important;
+}
+
 @media (orientation: landscape) and (max-height: 520px) {
   .game-board {
     height: 100dvh;
