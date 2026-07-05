@@ -1,0 +1,6 @@
+{
+  "name": "UNO Show 'Em No Mercy",
+  "description": "A luxury Old Money styled peer-to-peer multiplayer UNO Show 'Em No Mercy card game with WebRTC peer matching, infinite draw, stacking rules, hand swaps, and extreme mercy rules.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

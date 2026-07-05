@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Cinzel", "Playfair Display", Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-gold: #D4AF37;
+  --color-gold-light: #F3E5AB;
+  --color-gold-dark: #AA7C11;
+  --color-emerald-deep: #093A20;
+  --color-burgundy-deep: #4A0E17;
+  --color-navy-deep: #0A192F;
+  --color-parchment: #F4EBD0;
+}
+
+/* Custom background presets resembling luxury card table felt */
+.bg-felt-emerald {
+  background: radial-gradient(circle at center, #0e5c33 0%, #093a20 60%, #03140b 100%);
+}
+
+.bg-felt-burgundy {
+  background: radial-gradient(circle at center, #731826 0%, #4a0e17 60%, #1a0407 100%);
+}
+
+.bg-felt-navy {
+  background: radial-gradient(circle at center, #132a4f 0%, #0a192f 60%, #030814 100%);
+}
+
+/* Premium Gold Foil Border & Glow */
+.gold-foil-border {
+  border: 2px solid;
+  border-image: linear-gradient(to bottom right, var(--color-gold-light), var(--color-gold-dark), var(--color-gold-light)) 1;
+}
+
+.gold-glow {
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+}
+
+.gold-glow-hover:hover {
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.7);
+  transform: translateY(-2px);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Red, Blue, Green, Yellow card highlights */
+.active-glow-red {
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.8);
+}
+.active-glow-blue {
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.8);
+}
+.active-glow-green {
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.8);
+}
+.active-glow-yellow {
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.8);
+}
+
+/* Landscape locked mode layout rules */
+@media (orientation: portrait) {
+  .portrait-overlay {
+    display: flex !important;
+  }
+}
+
+/* Custom card fan layout styling */
+.card-fan-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 140px;
+}
+
+/* Smooth custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-gold-dark);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold);
+}
+
+/* Custom luxury animation styles */
+@keyframes gold-shine {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-gold-shine {
+  background: linear-gradient(
+    90deg,
+    rgba(212, 175, 55, 0) 0%,
+    rgba(255, 243, 189, 0.4) 50%,
+    rgba(212, 175, 55, 0) 100%
+  );
+  background-size: 200% auto;
+  animation: gold-shine 3s linear infinite;
+}
