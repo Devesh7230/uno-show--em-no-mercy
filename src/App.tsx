@@ -454,7 +454,7 @@ export default function App() {
 
   // 4. Authoritative State Mutation Engine (Host Only)
   const processPlayerAction = (senderId: string, actionPayload: any) => {
-    if (!isHost) return;
+    if (!isHostRef.current) return;
 
     setGameState((prev) => {
       if (!prev) return null;

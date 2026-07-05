@@ -182,7 +182,7 @@ export default function GameBoard({
     <div className="game-board w-full h-[100dvh] grid grid-rows-12 gap-1 p-2 md:p-3 select-none text-[#F4EBD0] overflow-hidden relative">
       
       {/* 1. TOP BAR PANEL */}
-      <div className="row-span-1 flex items-center justify-between border-b border-[#D4AF37]/20 pb-1.5 px-2 relative z-20">
+      <div className="game-topbar row-span-1 flex items-center justify-between border-b border-[#D4AF37]/20 pb-1.5 px-2 relative z-20">
         <div className="flex items-center gap-2">
           <button
             onClick={onExitGame}
@@ -235,7 +235,7 @@ export default function GameBoard({
       </div>
 
       {/* 2. OPPONENTS GRID (TOP/SIDES) */}
-      <div className="row-span-2 grid grid-cols-4 md:grid-cols-6 gap-2 items-center justify-center px-1 py-1 z-10">
+      <div className="game-players-panel row-span-2 grid grid-cols-4 md:grid-cols-6 gap-2 items-center justify-center px-1 py-1 z-10">
         {gameState.players.map((p, idx) => {
           const isCurrent = gameState.currentTurnIndex === idx;
           const isSelf = p.id === myPeerId;
@@ -372,10 +372,10 @@ export default function GameBoard({
       </div>
 
       {/* 3. CENTRAL COMBAT ARENA */}
-      <div className="row-span-5 grid grid-cols-12 gap-3 items-center justify-center relative z-10 px-1">
+      <div className="game-combat-row row-span-5 grid grid-cols-12 gap-3 items-center justify-center relative z-10 px-1">
         
         {/* Left Side: Game Event Logs */}
-        <div className="col-span-4 h-full border border-[#D4AF37]/20 bg-black/45 rounded p-2.5 flex flex-col justify-between overflow-hidden shadow-inner font-mono text-[9px] md:text-[10px]">
+        <div className="game-log-panel col-span-4 h-full border border-[#D4AF37]/20 bg-black/45 rounded p-2.5 flex flex-col justify-between overflow-hidden shadow-inner font-mono text-[9px] md:text-[10px]">
           <div className="border-b border-[#D4AF37]/15 pb-1 mb-1.5 text-stone-300 uppercase tracking-widest font-serif text-center font-bold">
             ✦ Court Bulletins ✦
           </div>
@@ -391,7 +391,7 @@ export default function GameBoard({
         </div>
 
         {/* Center: Draw / Discard Cards Table */}
-        <div className="col-span-8 h-full flex flex-col justify-center items-center relative border border-[#D4AF37]/20 bg-black/15 rounded shadow-inner py-2">
+        <div className="game-table-panel col-span-8 h-full flex flex-col justify-center items-center relative border border-[#D4AF37]/20 bg-black/15 rounded shadow-inner py-2">
           
           {/* Stacking Penalty Alert Banner */}
           {gameState.stackCount > 0 && (
@@ -405,11 +405,11 @@ export default function GameBoard({
             {/* Draw Pile */}
             <div className="flex flex-col items-center gap-1.5">
               <button
-                disabled={!isMyTurn || isSpectating || gameState.stackCount > 0}
-                onClick={onDrawCard}
+                disabled={!isMyTurn || isSpectating}
+                onClick={gameState.stackCount > 0 ? onAcceptPenalty : onDrawCard}
                 className={`
-                  relative w-22 h-32 md:w-24 md:h-36 rounded-md border-2 border-dashed border-[#D4AF37]/50 bg-black/55 shadow-md flex flex-col items-center justify-center cursor-pointer transition-all duration-300
-                  ${isMyTurn && gameState.stackCount === 0 && !isSpectating ? 'ring-4 ring-[#D4AF37] scale-105 hover:bg-black/80 shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'opacity-65 cursor-not-allowed'}
+                  draw-pile-button relative w-22 h-32 md:w-24 md:h-36 rounded-md border-2 border-dashed border-[#D4AF37]/50 bg-black/55 shadow-md flex flex-col items-center justify-center cursor-pointer transition-all duration-300
+                  ${isMyTurn && !isSpectating ? 'ring-4 ring-[#D4AF37] scale-105 hover:bg-black/80 shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'opacity-65 cursor-not-allowed'}
                 `}
               >
                 {/* Royal back pattern */}
@@ -429,7 +429,7 @@ export default function GameBoard({
 
             {/* Discard Pile */}
             <div className="flex flex-col items-center gap-1.5">
-              <div className={`relative w-22 h-32 md:w-24 md:h-36 rounded-md bg-black/65 flex items-center justify-center p-1 relative z-10 transition-shadow duration-500 ${getGlowClass()}`}>
+              <div className={`discard-pile-slot relative w-22 h-32 md:w-24 md:h-36 rounded-md bg-black/65 flex items-center justify-center p-1 relative z-10 transition-shadow duration-500 ${getGlowClass()}`}>
                 {topDiscard ? (
                   <CardItem card={topDiscard} size="pile" disabled={true} />
                 ) : (
@@ -447,7 +447,7 @@ export default function GameBoard({
             {isMyTurn && gameState.stackCount > 0 && !isSpectating && (
               <button
                 onClick={onAcceptPenalty}
-                className="pointer-events-auto flex items-center gap-1.5 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 border border-red-400 text-[#F4EBD0] text-xs font-serif font-bold uppercase tracking-wider px-4 py-1.5 rounded-full shadow-lg transition-transform hover:scale-105 cursor-pointer"
+                className="penalty-action-button pointer-events-auto flex items-center justify-center gap-1.5 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 border border-red-400 text-[#F4EBD0] text-xs font-serif font-bold uppercase tracking-wider px-4 py-1.5 rounded-full shadow-lg transition-transform hover:scale-105 cursor-pointer whitespace-nowrap text-center"
               >
                 Accept Penalty &amp; Draw +{gameState.stackCount}
               </button>
@@ -465,7 +465,7 @@ export default function GameBoard({
       </div>
 
       {/* 4. PLAYER HAND VIEWPORT */}
-      <div className="row-span-4 flex flex-col justify-end items-center relative z-20 px-1 border-t border-[#D4AF37]/10 pt-2 bg-black/25">
+      <div className="game-hand-panel row-span-4 flex flex-col justify-end items-center relative z-20 px-1 border-t border-[#D4AF37]/10 pt-2 bg-black/25">
         
         {isSpectating ? (
           <div className="text-center pb-6">

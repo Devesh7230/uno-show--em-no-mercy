@@ -77,21 +77,110 @@
   .game-board {
     height: 100dvh;
     min-height: 100dvh;
+    display: grid;
+    grid-template-columns: minmax(250px, 36%) minmax(0, 1fr);
+    grid-template-rows: 42px 96px minmax(0, 1fr);
+    grid-template-areas:
+      "top top"
+      "players table"
+      "log table";
     gap: 2px;
     padding: 4px 6px;
   }
 
-  .game-board > div:first-child {
+  .game-topbar {
+    grid-area: top;
+    min-height: 0;
     padding-bottom: 2px;
   }
 
-  .game-board > div:first-child button {
+  .game-topbar button {
     padding: 4px 8px;
     line-height: 1;
   }
 
-  .game-board > div:first-child .tracking-widest {
+  .game-topbar .tracking-widest {
     letter-spacing: 0.12em;
+  }
+
+  .game-players-panel {
+    grid-area: players;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .game-players-panel > div {
+    min-height: 92px;
+    padding: 8px;
+    border-radius: 6px;
+  }
+
+  .game-combat-row {
+    display: contents;
+  }
+
+  .game-log-panel {
+    grid-area: log;
+    min-height: 0;
+    height: 100%;
+    margin-top: 4px;
+    padding: 8px;
+    border-radius: 6px;
+  }
+
+  .game-table-panel {
+    grid-area: table;
+    min-height: 0;
+    height: 100%;
+    border-radius: 6px;
+    padding: 0 0 72px;
+  }
+
+  .game-table-panel > .flex {
+    gap: 34px;
+    transform: scale(0.86);
+  }
+
+  .game-table-panel .draw-pile-button,
+  .game-table-panel .discard-pile-slot {
+    width: 4.6rem;
+    height: 6.8rem;
+  }
+
+  .game-table-panel .penalty-action-button {
+    width: auto;
+    min-width: 10.5rem;
+    max-width: min(86vw, 18rem);
+    height: auto;
+    min-height: 2.35rem;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    line-height: 1.15;
+    font-size: 0.72rem;
+    white-space: normal;
+  }
+
+  .game-hand-panel {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 112px;
+    border-top: 0;
+    background: transparent;
+    padding-top: 0;
+    pointer-events: none;
+    z-index: 40;
+  }
+
+  .game-hand-panel .card-fan-container,
+  .game-hand-panel .card-fan-container > div,
+  .game-hand-panel button,
+  .game-hand-panel [id^="card-"] {
+    pointer-events: auto;
   }
 
   .game-board .card-fan-container {
