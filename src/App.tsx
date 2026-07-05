@@ -23,6 +23,10 @@ function generateRoomCode(): string {
   return code;
 }
 
+function cloneGameState(state: GameState): GameState {
+  return JSON.parse(JSON.stringify(state));
+}
+
 export default function App() {
   const [screen, setScreen] = useState<'menu' | 'lobby' | 'game'>('menu');
   const [feltColor, setFeltColor] = useState<'emerald' | 'burgundy' | 'navy'>('emerald');
@@ -36,6 +40,7 @@ export default function App() {
   // Connection
   const peerManagerRef = useRef<PeerManager | null>(null);
   const isHostRef = useRef(false);
+  const isMultiplayerRef = useRef(false);
   const lobbyPlayersRef = useRef<Player[]>([]);
   const myPeerIdRef = useRef('');
   const [myPeerId, setMyPeerId] = useState('');
@@ -45,6 +50,10 @@ export default function App() {
   useEffect(() => {
     isHostRef.current = isHost;
   }, [isHost]);
+
+  useEffect(() => {
+    isMultiplayerRef.current = isMultiplayer;
+  }, [isMultiplayer]);
 
   useEffect(() => {
     lobbyPlayersRef.current = lobbyPlayers;
@@ -78,6 +87,7 @@ export default function App() {
     setIsHost(true);
     isHostRef.current = true;
     setIsMultiplayer(true);
+    isMultiplayerRef.current = true;
     setIsPassPlay(false);
 
     const code = generateRoomCode();
@@ -170,6 +180,7 @@ export default function App() {
     setIsHost(false);
     isHostRef.current = false;
     setIsMultiplayer(true);
+    isMultiplayerRef.current = true;
     setIsPassPlay(false);
     setRoomCode(code);
 
@@ -260,21 +271,21 @@ export default function App() {
     switch (msg.type) {
       case 'LOBBY_UPDATE':
         // Guests receive lobby list updates
-        if (!isHost) {
+        if (!isHostRef.current) {
           setLobbyPlayers(msg.payload);
         }
         break;
 
       case 'GAME_START':
         // Guests receive initial state and switch screens
-        setGameState(msg.payload);
+        setGameState(cloneGameState(msg.payload));
         setScreen('game');
         triggerSound('fanfare');
         break;
 
       case 'GAME_STATE_SYNC':
         // Guests receive updated authoritative state
-        setGameState(msg.payload);
+        setGameState(cloneGameState(msg.payload));
         break;
 
       case 'PLAYER_ACTION':
@@ -300,7 +311,9 @@ export default function App() {
   const handleStartOffline = (name: string) => {
     setPlayerName(name);
     setIsHost(true);
+    isHostRef.current = true;
     setIsMultiplayer(false);
+    isMultiplayerRef.current = false;
     setIsPassPlay(false);
     setRoomCode('');
     setMyPeerId('user-local');
@@ -321,7 +334,9 @@ export default function App() {
   const handleStartPassPlay = (name: string) => {
     setPlayerName(name);
     setIsHost(true);
+    isHostRef.current = true;
     setIsMultiplayer(false);
+    isMultiplayerRef.current = false;
     setIsPassPlay(true);
     setRoomCode('');
     setMyPeerId('passplay-p1');
@@ -390,17 +405,17 @@ export default function App() {
     triggerSound('fanfare');
 
     // Broadcast if host
-    if (isMultiplayer && peerManagerRef.current) {
+    if (isMultiplayerRef.current && peerManagerRef.current) {
       peerManagerRef.current.broadcast({
         type: 'GAME_START',
         senderId: peerManagerRef.current.myPeerId,
-        payload: initialGameState,
+        payload: cloneGameState(initialGameState),
       });
     }
   };
 
   const handleStartMultiplayerMatch = () => {
-    if (!isHost) return;
+    if (!isHostRef.current) return;
     startGameWithPlayers(lobbyPlayers);
   };
 
@@ -446,6 +461,7 @@ export default function App() {
     setIsHost(false);
     isHostRef.current = false;
     setIsMultiplayer(false);
+    isMultiplayerRef.current = false;
     setIsPassPlay(false);
     setRoomCode('');
     setMyPeerId('');
@@ -466,7 +482,7 @@ export default function App() {
         return prev;
       }
 
-      let state = { ...prev };
+      let state = cloneGameState(prev);
       const logEntries: string[] = [];
 
       switch (actionPayload.actionType) {
@@ -531,7 +547,11 @@ export default function App() {
             triggerSound('gong');
 
             if (card.type === 'wild_reverse_draw_4') {
-              if (state.players.length > 2) {
+              if (state.players.length === 2) {
+                skipCount = 2;
+                const skipped = state.players[(playerIdx + state.turnDirection + state.players.length) % state.players.length];
+                logEntries.push(`Wild Reverse +4 skips ${skipped.name}. ${player.name} plays again.`);
+              } else {
                 state.turnDirection = state.turnDirection === 1 ? -1 : 1;
                 logEntries.push(`Turn order reversed!`);
               }
@@ -657,26 +677,20 @@ export default function App() {
         case 'DRAW_CARD': {
           const playerIdx = state.currentTurnIndex;
           const player = state.players[playerIdx];
-          const topDiscard = state.discardPile[state.discardPile.length - 1];
 
-          // Infinite Draw logic: draw until legally playable card found
-          let cardsDrawn: Card[] = [];
-          let playableFound = false;
-
-          while (!playableFound) {
-            if (state.drawPile.length === 0) {
-              recycleDiscardPile(state);
-            }
-
-            const card = state.drawPile.pop();
-            if (!card) break;
-
-            cardsDrawn.push(card);
-            playableFound = canPlayCard(card, topDiscard, state.activeColor, state.stackCount);
+          if (state.drawPile.length === 0) {
+            recycleDiscardPile(state);
           }
 
-          player.cards.push(...cardsDrawn);
-          logEntries.push(`${player.name} has no playable moves. Draws ${cardsDrawn.length} cards until a match is found.`);
+          const card = state.drawPile.pop();
+          if (!card) {
+            logEntries.push(`${player.name} tried to draw, but the draw pile is empty.`);
+            evaluateGameStateAndProgress(state, logEntries, 1);
+            break;
+          }
+
+          player.cards.push(card);
+          logEntries.push(`${player.name} draws 1 card and passes the turn.`);
           triggerSound('swoosh');
 
           // Reset UNO shouts
@@ -685,13 +699,9 @@ export default function App() {
           // Check mercy threshold
           checkMercyRule(state, logEntries);
 
-          // Player gets to play that card they just drew or pass. To make the game automated,
-          // we simply let them hold it. They can immediately play it on this same turn or pass.
-          // Since it's playable, we keep turn on them. Let's make sure they can play it.
-          // (They don't auto-pass, keeping the active playable card on their hand).
-          state.log.push(...logEntries);
-          broadcastState(state);
-          return state;
+          // Drawing from the deck is limited to 1 card per turn and then the turn passes.
+          evaluateGameStateAndProgress(state, logEntries, 1);
+          break;
         }
 
         case 'ACCEPT_PENALTY': {
@@ -846,11 +856,11 @@ export default function App() {
 
   // Helper: broadcast state of host
   const broadcastState = (state: GameState) => {
-    if (isMultiplayer && peerManagerRef.current) {
+    if (isMultiplayerRef.current && peerManagerRef.current) {
       peerManagerRef.current.broadcast({
         type: 'GAME_STATE_SYNC',
         senderId: peerManagerRef.current.myPeerId,
-        payload: state,
+        payload: cloneGameState(state),
       });
     }
   };

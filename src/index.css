@@ -164,10 +164,21 @@
     white-space: normal;
   }
 
+  .game-action-prompts {
+    position: fixed;
+    left: 6px;
+    bottom: 8px;
+    width: max(250px, 36%);
+    justify-content: center;
+    z-index: 50;
+  }
+
   .game-hand-panel {
     position: absolute;
-    inset-inline: 0;
-    bottom: 0;
+    left: calc(max(250px, 36%) + 6px);
+    right: 6px;
+    bottom: 2px;
+    width: auto;
     height: 112px;
     border-top: 0;
     background: transparent;
@@ -184,12 +195,12 @@
   }
 
   .game-board .card-fan-container {
-    height: 108px;
+    height: 104px;
     padding-bottom: 0;
   }
 
   .game-board .card-fan-container > div {
-    transform: scale(0.92);
+    transform: scale(0.82);
     transform-origin: bottom center;
   }
 

@@ -76,6 +76,10 @@ export default function GameBoard({
   const isSpectating = !localPlayer || localPlayer.isKnockedOut;
 
   const topDiscard = gameState.discardPile[gameState.discardPile.length - 1];
+  const playableHandCards = localPlayer?.cards.filter((card) =>
+    canPlayCard(card, topDiscard, gameState.activeColor, gameState.stackCount)
+  ) ?? [];
+  const hasPlayableHandCard = playableHandCards.length > 0;
 
   // Colors list for Wild modal
   const wildColors: Exclude<CardColor, 'wild'>[] = ['red', 'blue', 'green', 'yellow'];
@@ -405,11 +409,11 @@ export default function GameBoard({
             {/* Draw Pile */}
             <div className="flex flex-col items-center gap-1.5">
               <button
-                disabled={!isMyTurn || isSpectating}
+                disabled={!isMyTurn || isSpectating || (gameState.stackCount > 0 && hasPlayableHandCard)}
                 onClick={gameState.stackCount > 0 ? onAcceptPenalty : onDrawCard}
                 className={`
                   draw-pile-button relative w-22 h-32 md:w-24 md:h-36 rounded-md border-2 border-dashed border-[#D4AF37]/50 bg-black/55 shadow-md flex flex-col items-center justify-center cursor-pointer transition-all duration-300
-                  ${isMyTurn && !isSpectating ? 'ring-4 ring-[#D4AF37] scale-105 hover:bg-black/80 shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'opacity-65 cursor-not-allowed'}
+                  ${isMyTurn && !isSpectating && !(gameState.stackCount > 0 && hasPlayableHandCard) ? 'ring-4 ring-[#D4AF37] scale-105 hover:bg-black/80 shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'opacity-65 cursor-not-allowed'}
                 `}
               >
                 {/* Royal back pattern */}
@@ -443,14 +447,20 @@ export default function GameBoard({
           </div>
 
           {/* Action Prompts Overlay */}
-          <div className="absolute bottom-2 flex gap-3 z-20 pointer-events-none">
-            {isMyTurn && gameState.stackCount > 0 && !isSpectating && (
+          <div className="game-action-prompts absolute bottom-2 flex gap-3 z-20 pointer-events-none">
+            {isMyTurn && gameState.stackCount > 0 && !isSpectating && !hasPlayableHandCard && (
               <button
                 onClick={onAcceptPenalty}
                 className="penalty-action-button pointer-events-auto flex items-center justify-center gap-1.5 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 border border-red-400 text-[#F4EBD0] text-xs font-serif font-bold uppercase tracking-wider px-4 py-1.5 rounded-full shadow-lg transition-transform hover:scale-105 cursor-pointer whitespace-nowrap text-center"
               >
                 Accept Penalty &amp; Draw +{gameState.stackCount}
               </button>
+            )}
+
+            {isMyTurn && gameState.stackCount > 0 && !isSpectating && hasPlayableHandCard && (
+              <span className="bg-emerald-600/90 border border-emerald-300 text-white text-[10px] md:text-xs py-1 px-3 rounded-full font-serif uppercase tracking-wider shadow-lg">
+                Play +{gameState.stackCount} or higher
+              </span>
             )}
 
             {isMyTurn && gameState.stackCount === 0 && !isSpectating && (
@@ -479,7 +489,7 @@ export default function GameBoard({
           <div className="w-full max-w-5xl flex flex-col items-center">
             
             {/* Draw Prompt if no playable cards */}
-            {isMyTurn && localPlayer.cards.every(c => !canPlayCard(c, topDiscard, gameState.activeColor, gameState.stackCount)) && (
+            {isMyTurn && !hasPlayableHandCard && (
               <div className="absolute -top-6 bg-amber-500 text-slate-900 border border-amber-400 text-[10px] md:text-xs py-0.5 px-3.5 rounded-full font-mono uppercase tracking-wider animate-pulse flex items-center gap-1.5 shadow-lg">
                 ⚠️ NO PLAYABLE CARDS IN HAND! CLICK DRAW PILE
               </div>
