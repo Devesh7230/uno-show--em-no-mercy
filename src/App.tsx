@@ -545,7 +545,11 @@ export default function App() {
               logEntries.push(`${player.name} discarded all ${card.color.toUpperCase()} cards (${cardsToDiscard.length} cards dumped!).`);
             }
           } else if (card.type === 'wild_roulette') {
-            // Target is handled
+            state.rouletteTargetId = player.id;
+            logEntries.push(`${player.name} unleashed COLOR ROULETTE! Awaiting target and color choice...`);
+            state.log.push(...logEntries);
+            broadcastState(state);
+            return state;
           }
 
           // Check if played 7 (Hand Swap Selector)
@@ -610,6 +614,7 @@ export default function App() {
           const targetPlayer = state.players.find((p) => p.id === targetPlayerId);
 
           if (!targetPlayer || targetPlayer.isKnockedOut || player.id === targetPlayerId) return prev;
+          if (state.rouletteTargetId !== player.id) return prev;
 
           logEntries.push(`${player.name} targets ${targetPlayer.name} with COLOR ROULETTE on ${chosenColor.toUpperCase()}!`);
           
@@ -637,6 +642,7 @@ export default function App() {
           }
 
           targetPlayer.cards = targetCards;
+          state.rouletteTargetId = null;
           logEntries.push(`${targetPlayer.name} was forced to draw ${drawnCount} cards! Turn ends.`);
           triggerSound('gong');
 

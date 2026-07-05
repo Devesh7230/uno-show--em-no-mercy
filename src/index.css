@@ -73,6 +73,53 @@
   height: 140px;
 }
 
+@media (orientation: landscape) and (max-height: 520px) {
+  .game-board {
+    height: 100dvh;
+    min-height: 100dvh;
+    gap: 2px;
+    padding: 4px 6px;
+  }
+
+  .game-board > div:first-child {
+    padding-bottom: 2px;
+  }
+
+  .game-board > div:first-child button {
+    padding: 4px 8px;
+    line-height: 1;
+  }
+
+  .game-board > div:first-child .tracking-widest {
+    letter-spacing: 0.12em;
+  }
+
+  .game-board .card-fan-container {
+    height: 108px;
+    padding-bottom: 0;
+  }
+
+  .game-board .card-fan-container > div {
+    transform: scale(0.92);
+    transform-origin: bottom center;
+  }
+
+  .game-board [id^="card-"] {
+    width: 3.55rem;
+    height: 5.35rem;
+    padding: 0.35rem;
+  }
+
+  .game-board [id^="card-"] .my-auto {
+    width: 2.45rem;
+    height: 2.45rem;
+  }
+
+  .game-board [id^="card-"] span {
+    font-size: 0.82rem;
+  }
+}
+
 /* Smooth custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;

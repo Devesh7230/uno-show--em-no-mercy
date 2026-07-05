@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Play, RotateCw, AlertTriangle, User, Volume2, VolumeX, Shield, Swords, Crown, Skull, Sparkles, Layers, Scroll } from 'lucide-react';
+import { Maximize2, RotateCw, AlertTriangle, Volume2, VolumeX, Swords, Crown, Skull, Scroll } from 'lucide-react';
 import { Card, Player, GameState, CardColor } from '../types';
 import { canPlayCard, getCardLabel, isDrawCard } from '../utils/game';
 import CardItem from './CardItem';
@@ -80,6 +80,13 @@ export default function GameBoard({
   // Colors list for Wild modal
   const wildColors: Exclude<CardColor, 'wild'>[] = ['red', 'blue', 'green', 'yellow'];
 
+  const handleEnterFullscreen = () => {
+    const root = document.documentElement;
+    if (!document.fullscreenElement && root.requestFullscreen) {
+      root.requestFullscreen().catch(() => {});
+    }
+  };
+
   // Handle card click
   const handleCardClick = (card: Card) => {
     if (!isMyTurn || isSpectating) return;
@@ -115,7 +122,10 @@ export default function GameBoard({
   const handleSelectWildColor = (color: CardColor) => {
     if (selectedWildCard) {
       if (selectedWildCard.type === 'wild_roulette' && rouletteSelectedPlayerId) {
-        onSelectRouletteParams(rouletteSelectedPlayerId, color);
+        onPlayCard(selectedWildCard.id, color);
+        setTimeout(() => {
+          onSelectRouletteParams(rouletteSelectedPlayerId, color);
+        }, 150);
       } else {
         onPlayCard(selectedWildCard.id, color);
       }
@@ -169,7 +179,7 @@ export default function GameBoard({
   };
 
   return (
-    <div className="w-full h-screen grid grid-rows-12 gap-1 p-2 md:p-3 select-none text-[#F4EBD0] overflow-hidden relative">
+    <div className="game-board w-full h-[100dvh] grid grid-rows-12 gap-1 p-2 md:p-3 select-none text-[#F4EBD0] overflow-hidden relative">
       
       {/* 1. TOP BAR PANEL */}
       <div className="row-span-1 flex items-center justify-between border-b border-[#D4AF37]/20 pb-1.5 px-2 relative z-20">
@@ -187,6 +197,14 @@ export default function GameBoard({
             title={isSoundOn ? 'Mute Audio' : 'Unmute Audio'}
           >
             {isSoundOn ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+          </button>
+
+          <button
+            onClick={handleEnterFullscreen}
+            className="p-1 border border-[#D4AF37]/30 hover:border-[#D4AF37] rounded bg-black/40 transition-colors cursor-pointer text-[#D4AF37]"
+            title="Enter fullscreen"
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
           </button>
         </div>
 
@@ -425,11 +443,11 @@ export default function GameBoard({
           </div>
 
           {/* Action Prompts Overlay */}
-          <div className="absolute bottom-2 flex gap-3 z-20">
+          <div className="absolute bottom-2 flex gap-3 z-20 pointer-events-none">
             {isMyTurn && gameState.stackCount > 0 && !isSpectating && (
               <button
                 onClick={onAcceptPenalty}
-                className="flex items-center gap-1.5 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 border border-red-400 text-[#F4EBD0] text-xs font-serif font-bold uppercase tracking-wider px-4 py-1.5 rounded-full shadow-lg transition-transform hover:scale-105 cursor-pointer"
+                className="pointer-events-auto flex items-center gap-1.5 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 border border-red-400 text-[#F4EBD0] text-xs font-serif font-bold uppercase tracking-wider px-4 py-1.5 rounded-full shadow-lg transition-transform hover:scale-105 cursor-pointer"
               >
                 Accept Penalty &amp; Draw +{gameState.stackCount}
               </button>
@@ -522,7 +540,7 @@ export default function GameBoard({
       {/* 5. MODAL OVERLAYS */}
 
       {/* A. Wild Color Picker Modal */}
-      {selectedWildCard && (
+      {selectedWildCard && !showRouletteModal && (
         <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-[999] p-4">
           <div className="border border-[#D4AF37] p-6 max-w-sm w-full bg-[#1A0E04] rounded shadow-[0_0_30px_rgba(212,175,55,0.4)] text-center relative">
             <div className="absolute inset-1 border border-[#D4AF37]/30 rounded pointer-events-none" />

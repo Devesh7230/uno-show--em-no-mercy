@@ -93,8 +93,9 @@ export default function CardItem({
   };
 
   // Compute rotation & transformation inline for fan layout
+  const playableLift = isPlayable ? -14 : 0;
   const style: CSSProperties = {
-    transform: `rotate(${angle}deg) translateY(${translateY}px)`,
+    transform: `rotate(${angle}deg) translateY(${translateY + playableLift}px)`,
     transformOrigin: 'bottom center',
     transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease',
   };
