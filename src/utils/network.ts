@@ -5,6 +5,7 @@ export class PeerManager {
   private peer: Peer | null = null;
   private connections: Map<string, DataConnection> = new Map();
   private hostConnection: DataConnection | null = null;
+  private playerName: string = 'Royalty';
   
   public myPeerId: string = '';
   public roomCode: string = '';
@@ -43,6 +44,7 @@ export class PeerManager {
   public joinRoom(roomCode: string, name: string) {
     this.isHost = false;
     this.roomCode = roomCode.toUpperCase();
+    this.playerName = name;
     
     console.log(`[Network] Initializing guest...`);
     
@@ -153,8 +155,8 @@ export class PeerManager {
           senderId: this.myPeerId,
           payload: {
             actionType: 'JOIN_GAME',
-            name: conn.metadata?.name || 'Royalty',
-          }
+            name: this.playerName,
+          },
         });
       });
 

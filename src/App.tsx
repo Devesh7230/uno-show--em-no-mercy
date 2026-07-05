@@ -35,9 +35,24 @@ export default function App() {
 
   // Connection
   const peerManagerRef = useRef<PeerManager | null>(null);
+  const isHostRef = useRef(false);
+  const lobbyPlayersRef = useRef<Player[]>([]);
+  const myPeerIdRef = useRef('');
   const [myPeerId, setMyPeerId] = useState('');
   const [lobbyPlayers, setLobbyPlayers] = useState<Player[]>([]);
   const [gameState, setGameState] = useState<GameState | null>(null);
+
+  useEffect(() => {
+    isHostRef.current = isHost;
+  }, [isHost]);
+
+  useEffect(() => {
+    lobbyPlayersRef.current = lobbyPlayers;
+  }, [lobbyPlayers]);
+
+  useEffect(() => {
+    myPeerIdRef.current = myPeerId;
+  }, [myPeerId]);
 
   // Sound triggering helper
   const triggerSound = (type: 'snap' | 'swoosh' | 'chime' | 'gong' | 'fanfare') => {
@@ -61,6 +76,7 @@ export default function App() {
   const handleHostRoom = (name: string) => {
     setPlayerName(name);
     setIsHost(true);
+    isHostRef.current = true;
     setIsMultiplayer(true);
     setIsPassPlay(false);
 
@@ -73,6 +89,7 @@ export default function App() {
     // Set up callbacks
     manager.onOpen = (id) => {
       setMyPeerId(id);
+      myPeerIdRef.current = id;
       // Create self as first player in lobby
       const hostPlayer: Player = {
         id,
@@ -83,6 +100,7 @@ export default function App() {
         isKnockedOut: false,
         hasYelledUno: false,
       };
+      lobbyPlayersRef.current = [hostPlayer];
       setLobbyPlayers([hostPlayer]);
       setScreen('lobby');
       triggerSound('chime');
@@ -100,6 +118,7 @@ export default function App() {
       // Remove player from lobby or active game
       setLobbyPlayers((prev) => {
         const updated = prev.filter((p) => p.id !== peerId);
+        lobbyPlayersRef.current = updated;
         // Broadcast new list to all clients
         manager.broadcast({
           type: 'LOBBY_UPDATE',
@@ -149,6 +168,7 @@ export default function App() {
   const handleJoinRoom = (name: string, code: string) => {
     setPlayerName(name);
     setIsHost(false);
+    isHostRef.current = false;
     setIsMultiplayer(true);
     setIsPassPlay(false);
     setRoomCode(code);
@@ -158,6 +178,7 @@ export default function App() {
 
     manager.onOpen = (id) => {
       setMyPeerId(id);
+      myPeerIdRef.current = id;
       setScreen('lobby');
       triggerSound('swoosh');
     };
@@ -177,6 +198,59 @@ export default function App() {
     };
 
     manager.joinRoom(code, name);
+  };
+
+  const broadcastLobbyUpdate = (players: Player[]) => {
+    peerManagerRef.current?.broadcast({
+      type: 'LOBBY_UPDATE',
+      senderId: myPeerIdRef.current,
+      payload: players,
+    });
+  };
+
+  const handleLobbyPlayerAction = (senderId: string, actionPayload: any) => {
+    if (!isHostRef.current) return false;
+
+    if (actionPayload.actionType === 'JOIN_GAME') {
+      const currentLobby = lobbyPlayersRef.current;
+      const playerExists = currentLobby.some((p) => p.id === senderId);
+      if (playerExists) {
+        broadcastLobbyUpdate(currentLobby);
+        return true;
+      }
+
+      const newPlayer: Player = {
+        id: senderId,
+        name: actionPayload.name || 'Royalty',
+        cards: [],
+        isHost: false,
+        isReady: false,
+        isKnockedOut: false,
+        hasYelledUno: false,
+      };
+
+      const updatedLobby = [...currentLobby, newPlayer];
+      lobbyPlayersRef.current = updatedLobby;
+      setLobbyPlayers(updatedLobby);
+      broadcastLobbyUpdate(updatedLobby);
+      return true;
+    }
+
+    if (actionPayload.actionType === 'TOGGLE_READY') {
+      const updatedLobby = lobbyPlayersRef.current.map((p) => {
+        if (p.id === senderId) {
+          return { ...p, isReady: !p.isReady };
+        }
+        return p;
+      });
+
+      lobbyPlayersRef.current = updatedLobby;
+      setLobbyPlayers(updatedLobby);
+      broadcastLobbyUpdate(updatedLobby);
+      return true;
+    }
+
+    return false;
   };
 
   // Handle network messages received via peerjs
@@ -205,13 +279,16 @@ export default function App() {
 
       case 'PLAYER_ACTION':
         // Host receives client requests and processes state mutations
-        if (isHost) {
+        if (isHostRef.current) {
+          if (handleLobbyPlayerAction(msg.senderId, msg.payload)) {
+            return;
+          }
           processPlayerAction(msg.senderId, msg.payload);
         }
         break;
 
       case 'KICK_PLAYER':
-        if (msg.payload === myPeerId) {
+        if (msg.payload === myPeerIdRef.current) {
           alert('You have been dismissed from the host salon.');
           handleExitGame();
         }
@@ -350,11 +427,8 @@ export default function App() {
     // Update lobby
     setLobbyPlayers((prev) => {
       const updated = prev.filter((p) => p.id !== targetId);
-      peerManagerRef.current?.broadcast({
-        type: 'LOBBY_UPDATE',
-        senderId: myPeerId,
-        payload: updated,
-      });
+      lobbyPlayersRef.current = updated;
+      broadcastLobbyUpdate(updated);
       return updated;
     });
   };
@@ -368,11 +442,14 @@ export default function App() {
     setScreen('menu');
     setGameState(null);
     setLobbyPlayers([]);
+    lobbyPlayersRef.current = [];
     setIsHost(false);
+    isHostRef.current = false;
     setIsMultiplayer(false);
     setIsPassPlay(false);
     setRoomCode('');
     setMyPeerId('');
+    myPeerIdRef.current = '';
   };
 
   // 4. Authoritative State Mutation Engine (Host Only)
@@ -381,51 +458,6 @@ export default function App() {
 
     setGameState((prev) => {
       if (!prev) return null;
-
-      // Handle Guest handshake joins in Lobby
-      if (actionPayload.actionType === 'JOIN_GAME') {
-        const playerExists = prev.players.some((p) => p.id === senderId);
-        if (playerExists) return prev;
-
-        const newPlayer: Player = {
-          id: senderId,
-          name: actionPayload.name,
-          cards: [],
-          isHost: false,
-          isReady: false,
-          isKnockedOut: false,
-          hasYelledUno: false,
-        };
-
-        const updatedLobby = [...lobbyPlayers, newPlayer];
-        setLobbyPlayers(updatedLobby);
-        
-        // Broadcast new lobby to guests
-        peerManagerRef.current?.broadcast({
-          type: 'LOBBY_UPDATE',
-          senderId: myPeerId,
-          payload: updatedLobby,
-        });
-        return prev;
-      }
-
-      // Handle Guest ready status toggle
-      if (actionPayload.actionType === 'TOGGLE_READY') {
-        const updatedLobby = lobbyPlayers.map((p) => {
-          if (p.id === senderId) {
-            return { ...p, isReady: !p.isReady };
-          }
-          return p;
-        });
-        setLobbyPlayers(updatedLobby);
-        
-        peerManagerRef.current?.broadcast({
-          type: 'LOBBY_UPDATE',
-          senderId: myPeerId,
-          payload: updatedLobby,
-        });
-        return prev;
-      }
 
       // --- Active Game Transitions ---
       const activePlayer = prev.players[prev.currentTurnIndex];
