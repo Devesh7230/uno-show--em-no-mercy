@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, LogIn, UserPlus } from "lucide-react";
 import { login, signup } from "../../firebase/auth";
+import { createUserProfile } from "../../firebase/firestore";
 
 interface AuthDialogProps {
   open: boolean;
@@ -58,7 +59,17 @@ export default function AuthDialog({
     }
     try {
       if (isSignup) {
-        await signup(username.trim(), email.trim(), password);
+        const credential = await signup(
+          username.trim(),
+          email.trim(),
+          password,
+        );
+
+        await createUserProfile(
+          credential.user.uid,
+          username.trim(),
+          email.trim(),
+        );
       } else {
         await login(email.trim(), password);
       }

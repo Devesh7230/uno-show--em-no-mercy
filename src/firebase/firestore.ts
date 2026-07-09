@@ -1,38 +1,36 @@
-import { doc, getDoc, setDoc } from "firebase/firestore";
-
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
 
 export async function createUserProfile(
   uid: string,
-  email: string,
   username: string,
+  email: string,
 ) {
   await setDoc(doc(db, "users", uid), {
     username,
+
     email,
 
-    createdAt: new Date(),
+    // ===== PLAYER =====
+    equippedTitle: "Baron",
+    ownedTitles: ["Baron"],
 
-    stats: {
-      matches: 0,
-      wins: 0,
-      losses: 0,
-    },
+    coins: 100,
 
-    coins: 0,
+    // ===== STATS =====
+    wins: 0,
+    losses: 0,
+    totalMatches: 0,
 
-    selectedTheme: "Royal Navy",
+    // ===== THEMES =====
+    equippedTheme: "emerald",
+    ownedThemes: ["emerald"],
 
-    ownedThemes: ["Royal Navy"],
+    // ===== EMOJIS =====
+    equippedEmojis: ["😀", "🔥", "❤️"],
+    emojisUnlocked: ["😀", "🔥", "❤️"],
 
-    guest: false,
+    // ===== CREATED =====
+    createdAt: serverTimestamp(),
   });
-}
-
-export async function getUserProfile(uid: string) {
-  const snapshot = await getDoc(doc(db, "users", uid));
-
-  if (!snapshot.exists()) return null;
-
-  return snapshot.data();
 }
