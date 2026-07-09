@@ -68,12 +68,14 @@ export default function App() {
   const [gameState, setGameState] = useState<GameState | null>(null);
 
   const { user, isGuest, loading } = useAuth();
-
-  console.log({
-    user,
-    isGuest,
-    loading,
-  });
+  const { player } = useAuth();
+  console.log(player);
+  // console.log(player);
+  //   console.log({
+  //     user,
+  //     isGuest,
+  //     loading,
+  //   });
 
   useEffect(() => {
     isHostRef.current = isHost;

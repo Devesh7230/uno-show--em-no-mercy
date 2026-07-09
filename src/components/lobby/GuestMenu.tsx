@@ -6,20 +6,27 @@ import {
   Trophy,
   Palette,
   Mic,
+  Smile,
+  Type,
 } from "lucide-react";
-
+import { logout } from "../../firebase/auth";
+import { useAuth } from "../../contexts/AuthContext";
+import { LogOut } from "lucide-react";
 interface GuestMenuProps {
   open: boolean;
   onClose: () => void;
   onLogin: () => void;
   onSignup: () => void;
 }
+
 export default function GuestMenu({
   open,
   onClose,
   onLogin,
   onSignup,
 }: GuestMenuProps) {
+  const { player } = useAuth();
+
   if (!open) return null;
 
   return (
@@ -34,7 +41,7 @@ export default function GuestMenu({
           top-20
           right-4
           w-80
-          max-w-[90vw]
+          max-w-[92vw]
           bg-[#082012]
           border
           border-[#D4AF37]/30
@@ -44,49 +51,98 @@ export default function GuestMenu({
           overflow-hidden
         "
       >
-        {/* Header */}
+        {/* ================= HEADER ================= */}
+
         <div className="p-5 border-b border-[#D4AF37]/20">
-          <div className="flex items-center gap-3">
-            <UserCircle className="text-[#D4AF37]" size={42} />
+          {player ? (
+            <div className="flex items-center gap-4">
+              <UserCircle size={52} className="text-[#D4AF37]" />
 
-            <div>
-              <div className="text-[#F3E5AB] font-semibold">Guest Noble</div>
+              <div className="flex flex-col">
+                <span className="text-lg font-bold text-[#F4EBD0]">
+                  {player.username}
+                </span>
 
-              <div className="text-xs text-stone-400">Continue as Guest</div>
+                <span className="text-sm text-[#D4AF37]">
+                  {player.equippedTitle}
+                </span>
+
+                <span className="text-sm text-stone-300 mt-1">
+                  💰 {player.coins} Coins
+                </span>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <UserCircle size={52} className="text-[#D4AF37]" />
+
+              <div className="flex flex-col">
+                <span className="text-lg font-bold">Guest Noble</span>
+
+                <span className="text-sm text-stone-400">
+                  Continue as Guest
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Buttons */}
-        <div className="p-3 space-y-2">
-          <button
-            onClick={() => {
-              onClose();
-              onLogin();
-            }}
-            className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[#D4AF37]/10 transition"
-          >
-            <LogIn size={20} className="text-[#D4AF37]" />
-            Login
-          </button>
+        {/* ================= MENU ================= */}
 
-          <button
-            onClick={() => {
-              onClose();
-              onSignup();
-            }}
-            className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[#D4AF37]/10 transition"
-          >
-            <UserPlus size={20} className="text-[#D4AF37]" />
-            Create Account
-          </button>
+        <div className="p-3 space-y-2">
+          {!player && (
+            <>
+              <MenuButton
+                icon={<LogIn size={20} />}
+                text="Login"
+                onClick={() => {
+                  onClose();
+                  onLogin();
+                }}
+              />
+
+              <MenuButton
+                icon={<UserPlus size={20} />}
+                text="Create Account"
+                onClick={() => {
+                  onClose();
+                  onSignup();
+                }}
+              />
+            </>
+          )}
+
+          {player && (
+            <>
+              <MenuButton icon={<UserCircle size={20} />} text="Profile" />
+
+              <MenuButton icon={<Trophy size={20} />} text="Statistics" />
+
+              <MenuButton icon={<Palette size={20} />} text="Themes" />
+
+              <MenuButton icon={<Smile size={20} />} text="Emoji" />
+
+              <MenuButton icon={<Type size={20} />} text="Title" />
+
+              <MenuButton
+                icon={<LogOut size={20} />}
+                text="Logout"
+                onClick={async () => {
+                  await logout();
+                  onClose();
+                }}
+              />
+            </>
+          )}
         </div>
 
         <div className="border-t border-[#D4AF37]/20" />
 
+        {/* ================= EXTRA ================= */}
+
         <div className="p-4">
           <div className="text-xs uppercase tracking-widest text-stone-400 mb-3">
-            Available after Login
+            {player ? "Royal Features" : "Available After Login"}
           </div>
 
           <div className="space-y-2">
@@ -103,6 +159,41 @@ export default function GuestMenu({
     </>
   );
 }
+
+/* ===================================================== */
+
+function MenuButton({
+  icon,
+  text,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  text: string;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="
+        w-full
+        flex
+        items-center
+        gap-3
+        rounded-lg
+        p-3
+        hover:bg-[#D4AF37]/10
+        transition
+        text-left
+      "
+    >
+      <span className="text-[#D4AF37]">{icon}</span>
+
+      <span>{text}</span>
+    </button>
+  );
+}
+
+/* ===================================================== */
 
 function Feature({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
