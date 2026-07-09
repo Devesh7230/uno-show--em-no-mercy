@@ -32,7 +32,8 @@ export default function MainMenu({
   const [errorMsg, setErrorMsg] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [guestOpen, setGuestOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
 
   const handleAction = (action: "host" | "join" | "offline" | "passplay") => {
     const trimmedName = name.trim() || "Noble Player";
@@ -74,9 +75,20 @@ export default function MainMenu({
       <GuestMenu
         open={guestOpen}
         onClose={() => setGuestOpen(false)}
-        onLogin={() => setLoginOpen(true)}
+        onLogin={() => {
+          setAuthMode("login");
+          setAuthOpen(true);
+        }}
+        onSignup={() => {
+          setAuthMode("signup");
+          setAuthOpen(true);
+        }}
       />
-      <AuthDialog open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <AuthDialog
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+        defaultMode={authMode}
+      />
 
       <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch pb-8">
         {/* Left Column: Player Config & Actions */}

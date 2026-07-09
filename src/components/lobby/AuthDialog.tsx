@@ -1,43 +1,81 @@
-import { useState } from "react";
-import { X, LogIn } from "lucide-react";
-import { login } from "../../firebase/auth";
+import { useEffect, useState } from "react";
+import { X, LogIn, UserPlus } from "lucide-react";
+import { login, signup } from "../../firebase/auth";
 
-interface LoginDialogProps {
+interface AuthDialogProps {
   open: boolean;
   onClose: () => void;
+  defaultMode: "login" | "signup";
 }
 
-export default function LoginDialog({ open, onClose }: LoginDialogProps) {
+export default function AuthDialog({
+  open,
+  onClose,
+  defaultMode,
+}: AuthDialogProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSignup, setIsSignup] = useState(defaultMode === "signup");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  useEffect(() => {
+    if (open) {
+      setIsSignup(defaultMode === "signup");
+      setError("");
+    }
+  }, [open, defaultMode]);
 
   if (!open) return null;
-  const handleLogin = async () => {
+  const handleAuth = async () => {
     setLoading(true);
     setError("");
+    if (isSignup) {
+      if (!username.trim()) {
+        setError("Username is required.");
+        setLoading(false);
+        return;
+      }
 
+      if (!email.trim()) {
+        setError("Email is required.");
+        setLoading(false);
+        return;
+      }
+
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters.");
+        setLoading(false);
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
+        setLoading(false);
+        return;
+      }
+    }
     try {
-      await login(email, password);
+      if (isSignup) {
+        await signup(username.trim(), email.trim(), password);
+      } else {
+        await login(email.trim(), password);
+      }
 
       onClose();
     } catch (err: any) {
       switch (err.code) {
+        case "auth/email-already-in-use":
+          setError("Email already registered.");
+          break;
+
+        case "auth/weak-password":
+          setError("Password is too weak.");
+          break;
+
         case "auth/invalid-credential":
           setError("Invalid email or password.");
-          break;
-
-        case "auth/user-not-found":
-          setError("User not found.");
-          break;
-
-        case "auth/wrong-password":
-          setError("Wrong password.");
-          break;
-
-        case "auth/invalid-email":
-          setError("Invalid email.");
           break;
 
         default:
@@ -59,9 +97,15 @@ export default function LoginDialog({ open, onClose }: LoginDialogProps) {
 
           <div className="flex items-center justify-between border-b border-[#D4AF37]/20 p-5">
             <div className="flex items-center gap-3">
-              <LogIn className="text-[#D4AF37]" />
+              {isSignup ? (
+                <UserPlus className="text-[#D4AF37]" />
+              ) : (
+                <LogIn className="text-[#D4AF37]" />
+              )}
 
-              <h2 className="text-xl font-serif text-[#F3E5AB]">Royal Login</h2>
+              <h2 className="text-xl font-serif text-[#F3E5AB]">
+                {isSignup ? "Royal Registration" : "Royal Login"}
+              </h2>
             </div>
 
             <button onClick={onClose}>
@@ -72,9 +116,19 @@ export default function LoginDialog({ open, onClose }: LoginDialogProps) {
           {/* Body */}
 
           <div className="p-5 space-y-4">
+            {isSignup && (
+              <div>
+                <label className="text-sm text-stone-300">Username</label>
+
+                <input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="mt-1 w-full rounded border border-[#D4AF37]/30 bg-black/30 px-3 py-2 outline-none"
+                />
+              </div>
+            )}
             <div>
               <label className="text-sm text-stone-300">Email</label>
-
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -92,23 +146,48 @@ export default function LoginDialog({ open, onClose }: LoginDialogProps) {
                 type="password"
                 className="mt-1 w-full rounded border border-[#D4AF37]/30 bg-black/30 px-3 py-2 outline-none"
               />
-              {error && (
-                <div className="mt-2 rounded border border-red-500/40 bg-red-900/20 p-2 text-sm text-red-300">
-                  {error}
-                </div>
-              )}
             </div>
+            {isSignup && (
+              <div>
+                <label className="text-sm text-stone-300">
+                  Confirm Password
+                </label>
 
+                <input
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  type="password"
+                  className="mt-1 w-full rounded border border-[#D4AF37]/30 bg-black/30 px-3 py-2 outline-none"
+                />
+              </div>
+            )}
+            {error && (
+              <div className="mt-2 rounded border border-red-500/40 bg-red-900/20 p-2 text-sm text-red-300">
+                {error}
+              </div>
+            )}
             <button
-              onClick={handleLogin}
+              onClick={handleAuth}
               disabled={loading}
               className="w-full rounded-lg bg-[#D4AF37] py-3 font-semibold text-black hover:brightness-110 transition"
             >
-              {loading ? "Logging in..." : "Login"}
+              {loading
+                ? isSignup
+                  ? "Creating Account..."
+                  : "Logging in..."
+                : isSignup
+                  ? "Create Account"
+                  : "Login"}
             </button>
 
-            <button className="w-full text-sm text-[#D4AF37]">
-              Create Account
+            <button
+              onClick={() => {
+                setIsSignup(!isSignup);
+                setError("");
+              }}
+              className="w-full text-sm text-[#D4AF37]"
+            >
+              {isSignup ? "Already have an account? Login" : "Create Account"}
             </button>
           </div>
         </div>

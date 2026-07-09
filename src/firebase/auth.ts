@@ -3,6 +3,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   UserCredential,
+  updateProfile,
 } from "firebase/auth";
 
 import { auth } from "./firebase";
@@ -21,10 +22,21 @@ export async function login(
  * Signup
  */
 export async function signup(
+  username: string,
   email: string,
   password: string,
-): Promise<UserCredential> {
-  return await createUserWithEmailAndPassword(auth, email, password);
+) {
+  const credential = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    password,
+  );
+
+  await updateProfile(credential.user, {
+    displayName: username,
+  });
+
+  return credential;
 }
 
 /**

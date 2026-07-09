@@ -12,9 +12,14 @@ interface GuestMenuProps {
   open: boolean;
   onClose: () => void;
   onLogin: () => void;
+  onSignup: () => void;
 }
-
-export default function GuestMenu({ open, onClose, onLogin }: GuestMenuProps) {
+export default function GuestMenu({
+  open,
+  onClose,
+  onLogin,
+  onSignup,
+}: GuestMenuProps) {
   if (!open) return null;
 
   return (
@@ -65,7 +70,13 @@ export default function GuestMenu({ open, onClose, onLogin }: GuestMenuProps) {
             Login
           </button>
 
-          <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[#D4AF37]/10 transition">
+          <button
+            onClick={() => {
+              onClose();
+              onSignup();
+            }}
+            className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[#D4AF37]/10 transition"
+          >
             <UserPlus size={20} className="text-[#D4AF37]" />
             Create Account
           </button>
