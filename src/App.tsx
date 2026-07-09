@@ -26,6 +26,7 @@ import {
   playFanfare,
 } from "./utils/audio";
 import { auth, db } from "./firebase/firebase";
+import { useAuth } from "./contexts/AuthContext";
 
 // Testing
 // console.log("Firebase Auth:", auth);
@@ -65,6 +66,14 @@ export default function App() {
   const [myPeerId, setMyPeerId] = useState("");
   const [lobbyPlayers, setLobbyPlayers] = useState<Player[]>([]);
   const [gameState, setGameState] = useState<GameState | null>(null);
+
+  const { user, isGuest, loading } = useAuth();
+
+  console.log({
+    user,
+    isGuest,
+    loading,
+  });
 
   useEffect(() => {
     isHostRef.current = isHost;
