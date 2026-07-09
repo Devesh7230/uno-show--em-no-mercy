@@ -1,3 +1,4 @@
+import type { FeltColor } from "./theme";
 export interface Player {
   username: string;
   email: string;
@@ -7,8 +8,8 @@ export interface Player {
   equippedTitle: string;
   ownedTitles: string[];
 
-  equippedTheme: string;
-  ownedThemes: string[];
+  equippedTheme: FeltColor;
+  ownedThemes: FeltColor[];
 
   equippedEmojis: string[];
   emojisUnlocked: string[];

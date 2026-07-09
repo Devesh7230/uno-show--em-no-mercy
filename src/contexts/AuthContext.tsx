@@ -6,9 +6,9 @@ import {
   ReactNode,
 } from "react";
 import type { Player } from "../types/player";
-import { getUserProfile } from "../firebase/firestore";
-import { onAuthStateChanged, User } from "firebase/auth";
-
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase/firebase";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 
 type AuthContextType = {
@@ -16,8 +16,10 @@ type AuthContextType = {
   player: Player | null;
   loading: boolean;
   isGuest: boolean;
+  logout: () => Promise<void>;
   continueAsGuest: () => void;
   exitGuestMode: () => void;
+  refreshPlayer: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,23 +31,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
 
-      if (firebaseUser) {
-        const profile = await getUserProfile(firebaseUser.uid);
-
-        setPlayer(profile);
-      } else {
+      if (!firebaseUser) {
         setPlayer(null);
+        setLoading(false);
+        return;
       }
 
-      setLoading(false);
+      const unsubscribePlayer = onSnapshot(
+        doc(db, "users", firebaseUser.uid),
+        (snapshot) => {
+          if (snapshot.exists()) {
+            setPlayer(snapshot.data() as Player);
+          }
+
+          setLoading(false);
+        },
+      );
+
+      return unsubscribePlayer;
     });
 
-    return unsubscribe;
+    return unsubscribeAuth;
   }, []);
+  async function refreshPlayer() {
+    if (!user) return;
 
+    const snap = await getDoc(doc(db, "users", user.uid));
+
+    if (snap.exists()) {
+      setPlayer(snap.data() as Player);
+    }
+  }
   function continueAsGuest() {
     setIsGuest(true);
   }
@@ -54,15 +73,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsGuest(false);
   }
 
+  async function logout() {
+    await signOut(auth);
+    setPlayer(null);
+  }
   return (
     <AuthContext.Provider
       value={{
         user,
         player,
+        refreshPlayer,
         loading,
         isGuest,
         continueAsGuest,
         exitGuestMode,
+        logout,
       }}
     >
       {children}

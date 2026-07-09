@@ -17,6 +17,8 @@ interface GuestMenuProps {
   onClose: () => void;
   onLogin: () => void;
   onSignup: () => void;
+  onProfile: () => void;
+  onThemes: () => void;
 }
 
 export default function GuestMenu({
@@ -24,6 +26,8 @@ export default function GuestMenu({
   onClose,
   onLogin,
   onSignup,
+  onProfile,
+  onThemes
 }: GuestMenuProps) {
   const { player } = useAuth();
 
@@ -114,11 +118,25 @@ export default function GuestMenu({
 
           {player && (
             <>
-              <MenuButton icon={<UserCircle size={20} />} text="Profile" />
+              <MenuButton
+                onClick={() => {
+                  onClose();
+                  onProfile();
+                }}
+                icon={<UserCircle size={20} />}
+                text="Profile"
+              />
 
               <MenuButton icon={<Trophy size={20} />} text="Statistics" />
 
-              <MenuButton icon={<Palette size={20} />} text="Themes" />
+              <MenuButton
+                onClick={() => {
+                  onClose();
+                  onThemes();
+                }}
+                icon={<Palette size={20} />}
+                text="Themes"
+              />
 
               <MenuButton icon={<Smile size={20} />} text="Emoji" />
 

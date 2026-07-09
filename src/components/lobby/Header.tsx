@@ -1,4 +1,5 @@
 import { Sparkles, Menu, UserCircle, Maximize } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface HeaderProps {
   onFullscreen: () => void;
@@ -7,6 +8,7 @@ interface HeaderProps {
 }
 
 export default function Header({ onFullscreen, onMenu, onGuest }: HeaderProps) {
+  const { player } = useAuth();
   return (
     <header className="w-full max-w-4xl flex items-center justify-between mb-5">
       {/* LEFT */}
@@ -48,17 +50,25 @@ export default function Header({ onFullscreen, onMenu, onGuest }: HeaderProps) {
 
         <button
           onClick={onGuest}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[#D4AF37]/40 bg-black/30 hover:bg-black/50 transition cursor-pointer"
+          className="flex flex-col items-center gap-2 px-3 py-2 rounded-lg border border-[#D4AF37]/40 bg-black/30 hover:bg-black/50 transition cursor-pointer"
         >
-          <UserCircle className="w-6 h-6 text-[#D4AF37]" />
+          {player ? (
+            <>
+              <span className="font-bold text-[#F4EBD0]">
+                {player.username}
+              </span>
 
-          <span className="hidden md:flex flex-col text-left">
-            <span className="text-xs text-[#F3E5AB]">Guest Noble</span>
+              <span className="text-xs text-[#D4AF37]">
+                {player.equippedTitle}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="font-bold text-[#F4EBD0]">Guest Noble</span>
 
-            <span className="text-[10px] text-stone-400">
-              Continue as Guest
-            </span>
-          </span>
+              <span className="text-xs text-stone-400">Continue as Guest</span>
+            </>
+          )}
         </button>
       </div>
     </header>

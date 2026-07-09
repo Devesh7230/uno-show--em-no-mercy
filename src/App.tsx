@@ -69,6 +69,11 @@ export default function App() {
 
   const { user, isGuest, loading } = useAuth();
   const { player } = useAuth();
+  useEffect(() => {
+    if (player) {
+      setFeltColor(player.equippedTheme);
+    }
+  }, [player]);
   console.log(player);
   // console.log(player);
   //   console.log({
@@ -1248,8 +1253,6 @@ export default function App() {
           onJoinRoom={handleJoinRoom}
           onStartOffline={handleStartOffline}
           onStartPassPlay={handleStartPassPlay}
-          feltColor={feltColor}
-          setFeltColor={setFeltColor}
         />
       )}
 

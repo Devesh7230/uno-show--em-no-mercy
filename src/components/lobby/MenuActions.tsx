@@ -8,9 +8,6 @@ import {
 } from "lucide-react";
 
 interface MenuActionsProps {
-  name: string;
-  setName: React.Dispatch<React.SetStateAction<string>>;
-
   roomCode: string;
   setRoomCode: React.Dispatch<React.SetStateAction<string>>;
 
@@ -24,8 +21,6 @@ interface MenuActionsProps {
 }
 
 export default function MenuActions({
-  name,
-  setName,
   roomCode,
   setRoomCode,
   showJoinInput,
@@ -36,29 +31,8 @@ export default function MenuActions({
 }: MenuActionsProps) {
   return (
     <>
-      <h2 className="text-lg font-serif uppercase tracking-wider text-[#D4AF37] border-b border-[#D4AF37]/20 pb-1.5">
-        1. Proclaim Your Identity
-      </h2>
-
-      <div className="flex flex-col gap-1.5">
-        <label className="text-[11px] uppercase tracking-wider text-stone-300 font-mono">
-          Noble Title & Name
-        </label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value.slice(0, 16));
-            setErrorMsg("");
-          }}
-          placeholder="e.g., Duchess Penelope, Sir Sterling"
-          maxLength={16}
-          className="w-full bg-[#1A0E04]/80 border border-[#D4AF37]/50 rounded px-3 py-2 text-sm text-[#F4EBD0] placeholder-[#F4EBD0]/35 focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
-        />
-      </div>
-
       <h2 className="text-lg font-serif uppercase tracking-wider text-[#D4AF37] border-b border-[#D4AF37]/20 pb-1.5 mt-2">
-        2. Choose Match Arena
+        Choose Match Arena
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
