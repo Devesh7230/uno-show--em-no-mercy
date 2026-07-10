@@ -8,6 +8,7 @@ import AuthDialog from "./lobby/AuthDialog";
 import { useAuth } from "../contexts/AuthContext";
 import ProfileDialog from "./lobby/ProfileDialog";
 import ThemeDialog from "./lobby/ThemeDialog";
+import TitleDialog from "./lobby/TitleDialog";
 interface MainMenuProps {
   onHostRoom: (name: string) => void;
   onJoinRoom: (name: string, code: string) => void;
@@ -31,6 +32,7 @@ export default function MainMenu({
   const { player } = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
+  const [titleOpen, setTitleOpen] = useState(false);
 
   const handleAction = (action: "host" | "join" | "offline" | "passplay") => {
     const trimmedName = player?.username ?? "Guest Noble";
@@ -81,6 +83,7 @@ export default function MainMenu({
           setAuthOpen(true);
         }}
         onProfile={() => setProfileOpen(true)}
+        onTitles={() => setTitleOpen(true)}
         onThemes={() => setThemeOpen(true)}
       />
       <AuthDialog
@@ -88,6 +91,7 @@ export default function MainMenu({
         onClose={() => setAuthOpen(false)}
         defaultMode={authMode}
       />
+      <TitleDialog open={titleOpen} onClose={() => setTitleOpen(false)} />
       <ThemeDialog open={themeOpen} onClose={() => setThemeOpen(false)} />
       <ProfileDialog open={profileOpen} onClose={() => setProfileOpen(false)} />
       <div className="w-full max-w-4xl pb-8">

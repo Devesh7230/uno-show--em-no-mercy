@@ -7,7 +7,7 @@ import {
   Palette,
   Mic,
   Smile,
-  Type,
+  Award,
 } from "lucide-react";
 import { logout } from "../../firebase/auth";
 import { useAuth } from "../../contexts/AuthContext";
@@ -19,6 +19,7 @@ interface GuestMenuProps {
   onSignup: () => void;
   onProfile: () => void;
   onThemes: () => void;
+  onTitles: () => void;
 }
 
 export default function GuestMenu({
@@ -27,7 +28,8 @@ export default function GuestMenu({
   onLogin,
   onSignup,
   onProfile,
-  onThemes
+  onTitles,
+  onThemes,
 }: GuestMenuProps) {
   const { player } = useAuth();
 
@@ -127,7 +129,14 @@ export default function GuestMenu({
                 text="Profile"
               />
 
-              <MenuButton icon={<Trophy size={20} />} text="Statistics" />
+              <MenuButton
+                onClick={() => {
+                  onClose();
+                  onTitles();
+                }}
+                icon={<Award size={20} />}
+                text="Title"
+              />
 
               <MenuButton
                 onClick={() => {
@@ -138,9 +147,9 @@ export default function GuestMenu({
                 text="Themes"
               />
 
-              <MenuButton icon={<Smile size={20} />} text="Emoji" />
+              <MenuButton icon={<Trophy size={20} />} text="Statistics" />
 
-              <MenuButton icon={<Type size={20} />} text="Title" />
+              <MenuButton icon={<Smile size={20} />} text="Emoji" />
 
               <MenuButton
                 icon={<LogOut size={20} />}

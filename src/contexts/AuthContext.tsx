@@ -31,6 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
+    const cachedPlayer = localStorage.getItem("player");
+
+    if (cachedPlayer) {
+      setPlayer(JSON.parse(cachedPlayer));
+    }
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
 
@@ -44,7 +49,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         doc(db, "users", firebaseUser.uid),
         (snapshot) => {
           if (snapshot.exists()) {
-            setPlayer(snapshot.data() as Player);
+            const data = snapshot.data() as Player;
+
+            setPlayer(data);
+
+            localStorage.setItem("player", JSON.stringify(data));
           }
 
           setLoading(false);
@@ -76,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function logout() {
     await signOut(auth);
     setPlayer(null);
+    localStorage.removeItem("player");
   }
   return (
     <AuthContext.Provider

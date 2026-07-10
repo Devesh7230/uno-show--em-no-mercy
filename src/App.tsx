@@ -5,6 +5,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { GameState, Player, Card, CardColor, NetworkMessage } from "./types";
+import SplashScreen from "./components/SplashScreen";
+import type { FeltColor } from "./types/theme";
 import {
   createDeck,
   canPlayCard,
@@ -47,15 +49,27 @@ function cloneGameState(state: GameState): GameState {
 
 export default function App() {
   const [screen, setScreen] = useState<"menu" | "lobby" | "game">("menu");
-  const [feltColor, setFeltColor] = useState<"emerald" | "burgundy" | "navy">(
-    "emerald",
-  );
   const [playerName, setPlayerName] = useState("Noble Player");
   const [roomCode, setRoomCode] = useState("");
   const [isHost, setIsHost] = useState(false);
   const [isMultiplayer, setIsMultiplayer] = useState(false);
   const [isPassPlay, setIsPassPlay] = useState(false);
   const [isSoundOn, setIsSoundOn] = useState(true);
+  const [feltColor, setFeltColor] = useState<FeltColor>(() => {
+    const cached = localStorage.getItem("player");
+
+    console.log("Cached:", cached);
+
+    if (cached) {
+      const player = JSON.parse(cached);
+
+      console.log("Theme:", player.equippedTheme);
+
+      return player.equippedTheme;
+    }
+
+    return "emerald";
+  });
 
   // Connection
   const peerManagerRef = useRef<PeerManager | null>(null);
@@ -67,8 +81,7 @@ export default function App() {
   const [lobbyPlayers, setLobbyPlayers] = useState<Player[]>([]);
   const [gameState, setGameState] = useState<GameState | null>(null);
 
-  const { user, isGuest, loading } = useAuth();
-  const { player } = useAuth();
+  const { user, isGuest, loading, player } = useAuth();
   useEffect(() => {
     if (player) {
       setFeltColor(player.equippedTheme);
@@ -1238,7 +1251,9 @@ export default function App() {
         return "bg-felt-navy";
     }
   };
-
+  if (loading && !player) {
+    return <SplashScreen />;
+  }
   return (
     <div
       className={`w-full min-h-screen ${getFeltClass()} transition-colors duration-500 overflow-hidden relative`}
