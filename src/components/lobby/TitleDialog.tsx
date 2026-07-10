@@ -2,13 +2,30 @@ import { X, Check, Coins, Crown } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { TITLES } from "../../config/titles";
 import { buyTitle, equipTitle } from "../../firebase/titleService";
+import type { FeltColor } from "../../types/theme";
 
 interface TitleDialogProps {
   open: boolean;
   onClose: () => void;
+  feltColor: FeltColor;
 }
+function getDialogTheme(feltColor: FeltColor) {
+  switch (feltColor) {
+    case "emerald":
+      return "bg-[#082012]";
 
-export default function TitleDialog({ open, onClose }: TitleDialogProps) {
+    case "burgundy":
+      return "bg-[#2B0A11]";
+
+    case "navy":
+      return "bg-[#081728]";
+  }
+}
+export default function TitleDialog({
+  open,
+  onClose,
+  feltColor,
+}: TitleDialogProps) {
   const { player, user, refreshPlayer } = useAuth();
 
   if (!open || !player || !user) return null;
@@ -36,13 +53,15 @@ export default function TitleDialog({ open, onClose }: TitleDialogProps) {
 
     await refreshPlayer();
   }
-
+  const dialogTheme = getDialogTheme(feltColor);
   return (
     <>
       <div onClick={onClose} className="fixed inset-0 bg-black/60 z-50" />
 
       <div className="fixed inset-0 flex items-center justify-center p-4 z-[60]">
-        <div className="w-full max-w-md rounded-xl border border-[#D4AF37]/30 bg-[#082012] shadow-2xl">
+        <div
+          className={`w-full max-w-md rounded-xl border border-[#D4AF37]/30 ${dialogTheme} shadow-2xl`}
+        >
           <div className="flex items-center justify-between border-b border-[#D4AF37]/20 p-5">
             <div className="flex items-center gap-2">
               <Crown className="text-[#D4AF37]" />

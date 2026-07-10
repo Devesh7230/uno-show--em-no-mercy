@@ -1264,6 +1264,7 @@ export default function App() {
       {/* Main App Navigation Router */}
       {screen === "menu" && (
         <MainMenu
+          feltColor={feltColor}
           onHostRoom={handleHostRoom}
           onJoinRoom={handleJoinRoom}
           onStartOffline={handleStartOffline}

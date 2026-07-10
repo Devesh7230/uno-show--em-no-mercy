@@ -11,6 +11,7 @@ import ThemeDialog from "./lobby/ThemeDialog";
 import TitleDialog from "./lobby/TitleDialog";
 import EmojiDialog from "./lobby/EmojiDialog";
 interface MainMenuProps {
+  feltColor: FeltColor;
   onHostRoom: (name: string) => void;
   onJoinRoom: (name: string, code: string) => void;
   onStartOffline: (name: string) => void;
@@ -18,6 +19,7 @@ interface MainMenuProps {
 }
 
 export default function MainMenu({
+  feltColor,
   onHostRoom,
   onJoinRoom,
   onStartOffline,
@@ -70,7 +72,8 @@ export default function MainMenu({
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        isGuest={true}
+        isGuest={!player}
+        feltColor={feltColor}
       />
       <GuestMenu
         open={guestOpen}
@@ -87,16 +90,34 @@ export default function MainMenu({
         onTitles={() => setTitleOpen(true)}
         onThemes={() => setThemeOpen(true)}
         onEmojis={() => setEmojiOpen(true)}
+        feltColor={feltColor}
       />
       <AuthDialog
         open={authOpen}
         onClose={() => setAuthOpen(false)}
         defaultMode={authMode}
+        feltColor={feltColor}
       />
-      <TitleDialog open={titleOpen} onClose={() => setTitleOpen(false)} />
-      <ThemeDialog open={themeOpen} onClose={() => setThemeOpen(false)} />
-      <ProfileDialog open={profileOpen} onClose={() => setProfileOpen(false)} />
-      <EmojiDialog open={emojiOpen} onClose={() => setEmojiOpen(false)} />
+      <TitleDialog
+        open={titleOpen}
+        onClose={() => setTitleOpen(false)}
+        feltColor={feltColor}
+      />
+      <ThemeDialog
+        open={themeOpen}
+        onClose={() => setThemeOpen(false)}
+        feltColor={feltColor}
+      />
+      <ProfileDialog
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        feltColor={feltColor}
+      />
+      <EmojiDialog
+        open={emojiOpen}
+        onClose={() => setEmojiOpen(false)}
+        feltColor={feltColor}
+      />
       <div className="w-full max-w-4xl pb-8">
         {/* Left Column: Player Config & Actions */}
         <div className="flex flex-col gap-4 border border-[#D4AF37]/30 bg-black/45 p-4 md:p-6 rounded shadow-[0_0_20px_rgba(0,0,0,0.5)]">

@@ -12,6 +12,7 @@ import {
 import { logout } from "../../firebase/auth";
 import { useAuth } from "../../contexts/AuthContext";
 import { LogOut } from "lucide-react";
+import type { FeltColor } from "../../types/theme";
 interface GuestMenuProps {
   open: boolean;
   onClose: () => void;
@@ -21,8 +22,20 @@ interface GuestMenuProps {
   onThemes: () => void;
   onTitles: () => void;
   onEmojis: () => void;
+  feltColor: FeltColor;
 }
+function getDialogTheme(feltColor: FeltColor) {
+  switch (feltColor) {
+    case "emerald":
+      return "bg-[#082012]";
 
+    case "burgundy":
+      return "bg-[#2B0A11]";
+
+    case "navy":
+      return "bg-[#081728]";
+  }
+}
 export default function GuestMenu({
   open,
   onClose,
@@ -32,11 +45,12 @@ export default function GuestMenu({
   onTitles,
   onThemes,
   onEmojis,
+  feltColor,
 }: GuestMenuProps) {
   const { player } = useAuth();
 
   if (!open) return null;
-
+  const dialogTheme = getDialogTheme(feltColor);
   return (
     <>
       {/* Overlay */}
@@ -50,7 +64,7 @@ export default function GuestMenu({
           right-4
           w-80
           max-w-[92vw]
-          bg-[#082012]
+          ${dialogTheme}
           border
           border-[#D4AF37]/30
           rounded-xl
@@ -137,7 +151,7 @@ export default function GuestMenu({
                   onTitles();
                 }}
                 icon={<Award size={20} />}
-                text="Title"
+                text="Title Shop"
               />
 
               <MenuButton
@@ -146,7 +160,7 @@ export default function GuestMenu({
                   onThemes();
                 }}
                 icon={<Palette size={20} />}
-                text="Themes"
+                text="Theme Shop"
               />
 
               <MenuButton
@@ -155,7 +169,7 @@ export default function GuestMenu({
                   onEmojis();
                 }}
                 icon={<Smile size={20} />}
-                text="Emoji"
+                text="Emoji Shop"
               />
 
               <MenuButton icon={<Trophy size={20} />} text="Statistics" />

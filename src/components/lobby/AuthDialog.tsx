@@ -2,17 +2,31 @@ import { useEffect, useState } from "react";
 import { X, LogIn, UserPlus } from "lucide-react";
 import { login, signup } from "../../firebase/auth";
 import { createUserProfile } from "../../firebase/firestore";
+import type { FeltColor } from "../../types/theme";
 
 interface AuthDialogProps {
   open: boolean;
   onClose: () => void;
   defaultMode: "login" | "signup";
+  feltColor: FeltColor;
 }
+function getDialogTheme(feltColor: FeltColor) {
+  switch (feltColor) {
+    case "emerald":
+      return "bg-[#082012]";
 
+    case "burgundy":
+      return "bg-[#2B0A11]";
+
+    case "navy":
+      return "bg-[#081728]";
+  }
+}
 export default function AuthDialog({
   open,
   onClose,
   defaultMode,
+  feltColor,
 }: AuthDialogProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -96,6 +110,7 @@ export default function AuthDialog({
       setLoading(false);
     }
   };
+  const dialogTheme = getDialogTheme(feltColor);
   return (
     <>
       {/* Overlay */}
@@ -103,7 +118,9 @@ export default function AuthDialog({
 
       {/* Dialog */}
       <div className="fixed inset-0 flex items-center justify-center z-[61] p-4">
-        <div className="w-full max-w-md rounded-xl border border-[#D4AF37]/30 bg-[#082012] shadow-2xl">
+        <div
+          className={`w-full max-w-md rounded-xl border border-[#D4AF37]/30 ${dialogTheme} shadow-2xl`}
+        >
           {/* Header */}
 
           <div className="flex items-center justify-between border-b border-[#D4AF37]/20 p-5">
