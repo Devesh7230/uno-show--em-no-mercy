@@ -20,6 +20,7 @@ interface GuestMenuProps {
   onProfile: () => void;
   onThemes: () => void;
   onTitles: () => void;
+  onEmojis: () => void;
 }
 
 export default function GuestMenu({
@@ -30,6 +31,7 @@ export default function GuestMenu({
   onProfile,
   onTitles,
   onThemes,
+  onEmojis,
 }: GuestMenuProps) {
   const { player } = useAuth();
 
@@ -147,9 +149,16 @@ export default function GuestMenu({
                 text="Themes"
               />
 
-              <MenuButton icon={<Trophy size={20} />} text="Statistics" />
+              <MenuButton
+                onClick={() => {
+                  onClose();
+                  onEmojis();
+                }}
+                icon={<Smile size={20} />}
+                text="Emoji"
+              />
 
-              <MenuButton icon={<Smile size={20} />} text="Emoji" />
+              <MenuButton icon={<Trophy size={20} />} text="Statistics" />
 
               <MenuButton
                 icon={<LogOut size={20} />}

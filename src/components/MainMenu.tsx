@@ -9,6 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 import ProfileDialog from "./lobby/ProfileDialog";
 import ThemeDialog from "./lobby/ThemeDialog";
 import TitleDialog from "./lobby/TitleDialog";
+import EmojiDialog from "./lobby/EmojiDialog";
 interface MainMenuProps {
   onHostRoom: (name: string) => void;
   onJoinRoom: (name: string, code: string) => void;
@@ -33,7 +34,7 @@ export default function MainMenu({
   const [profileOpen, setProfileOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [titleOpen, setTitleOpen] = useState(false);
-
+  const [emojiOpen, setEmojiOpen] = useState(false);
   const handleAction = (action: "host" | "join" | "offline" | "passplay") => {
     const trimmedName = player?.username ?? "Guest Noble";
     localStorage.setItem("uno_mercy_name", trimmedName);
@@ -85,6 +86,7 @@ export default function MainMenu({
         onProfile={() => setProfileOpen(true)}
         onTitles={() => setTitleOpen(true)}
         onThemes={() => setThemeOpen(true)}
+        onEmojis={() => setEmojiOpen(true)}
       />
       <AuthDialog
         open={authOpen}
@@ -94,6 +96,7 @@ export default function MainMenu({
       <TitleDialog open={titleOpen} onClose={() => setTitleOpen(false)} />
       <ThemeDialog open={themeOpen} onClose={() => setThemeOpen(false)} />
       <ProfileDialog open={profileOpen} onClose={() => setProfileOpen(false)} />
+      <EmojiDialog open={emojiOpen} onClose={() => setEmojiOpen(false)} />
       <div className="w-full max-w-4xl pb-8">
         {/* Left Column: Player Config & Actions */}
         <div className="flex flex-col gap-4 border border-[#D4AF37]/30 bg-black/45 p-4 md:p-6 rounded shadow-[0_0_20px_rgba(0,0,0,0.5)]">
