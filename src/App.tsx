@@ -27,7 +27,8 @@ import {
   playGong,
   playFanfare,
 } from "./utils/audio";
-import { auth, db } from "./firebase/firebase";
+import { auth } from "./firebase/firebase";
+import { applyMatchRewards } from "./firebase/firestore";
 import { useAuth } from "./contexts/AuthContext";
 function generateRoomCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Avoid confusing O, 0, 1, I
@@ -570,7 +571,10 @@ export default function App() {
   };
 
   // Exit game and clean up references
-  const handleExitGame = () => {
+  const handleExitGame = async () => {
+    if (isMultiplayerRef.current) {
+      await saveCurrentPlayerRewards();
+    }
     if (peerManagerRef.current) {
       peerManagerRef.current.destroy();
       peerManagerRef.current = null;
@@ -1122,6 +1126,33 @@ export default function App() {
     });
 
     console.log("[Session Rewards]", sessionRewardsRef.current);
+  };
+  const saveCurrentPlayerRewards = async () => {
+    if (!user) return;
+
+    const rewards = sessionRewardsRef.current[myPeerIdRef.current];
+
+    if (!rewards) return;
+
+    // Nothing earned, nothing to save.
+    if (
+      rewards.coins === 0 &&
+      rewards.wins === 0 &&
+      rewards.losses === 0 &&
+      rewards.matches === 0
+    ) {
+      return;
+    }
+
+    try {
+      await applyMatchRewards(user.uid, rewards);
+
+      console.log("[Rewards Saved]", rewards);
+
+      delete sessionRewardsRef.current[myPeerIdRef.current];
+    } catch (error) {
+      console.error("Failed to save rewards:", error);
+    }
   };
   // 5. Automated AI Court Bots Logic
   useEffect(() => {

@@ -58,7 +58,7 @@ export default function GuestMenu({
 
       {/* Dropdown */}
       <div
-        className="
+        className={`
           absolute
           top-20
           right-4
@@ -71,7 +71,7 @@ export default function GuestMenu({
           shadow-2xl
           z-50
           overflow-hidden
-        "
+      `}
       >
         {/* ================= HEADER ================= */}
 

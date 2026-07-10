@@ -1,4 +1,11 @@
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  increment,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "./firebase";
 
 export async function createUserProfile(
@@ -35,7 +42,6 @@ export async function createUserProfile(
   });
 }
 
-import { getDoc } from "firebase/firestore";
 import type { Player } from "../types/player";
 
 export async function getUserProfile(uid: string): Promise<Player | null> {
@@ -46,4 +52,23 @@ export async function getUserProfile(uid: string): Promise<Player | null> {
   }
 
   return snapshot.data() as Player;
+}
+export async function applyMatchRewards(
+  uid: string,
+  rewards: {
+    coins: number;
+    wins: number;
+    losses: number;
+    matches: number;
+  },
+) {
+  await updateDoc(doc(db, "users", uid), {
+    coins: increment(rewards.coins),
+
+    wins: increment(rewards.wins),
+
+    losses: increment(rewards.losses),
+
+    totalMatches: increment(rewards.matches),
+  });
 }
