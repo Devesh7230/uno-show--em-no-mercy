@@ -29,11 +29,6 @@ import {
 } from "./utils/audio";
 import { auth, db } from "./firebase/firebase";
 import { useAuth } from "./contexts/AuthContext";
-
-// Testing
-// console.log("Firebase Auth:", auth);
-// console.log("Firestore:", db);
-// Helper to generate a room code
 function generateRoomCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Avoid confusing O, 0, 1, I
   let code = "";
@@ -57,19 +52,23 @@ export default function App() {
   const [isSoundOn, setIsSoundOn] = useState(true);
   const [feltColor, setFeltColor] = useState<FeltColor>(() => {
     const cached = localStorage.getItem("player");
-
-    console.log("Cached:", cached);
-
     if (cached) {
       const player = JSON.parse(cached);
-
-      console.log("Theme:", player.equippedTheme);
-
       return player.equippedTheme;
     }
-
     return "emerald";
   });
+  const sessionRewardsRef = useRef<
+    Record<
+      string,
+      {
+        coins: number;
+        wins: number;
+        losses: number;
+        matches: number;
+      }
+    >
+  >({});
 
   // Connection
   const peerManagerRef = useRef<PeerManager | null>(null);
@@ -87,13 +86,6 @@ export default function App() {
       setFeltColor(player.equippedTheme);
     }
   }, [player]);
-  console.log(player);
-  // console.log(player);
-  //   console.log({
-  //     user,
-  //     isGuest,
-  //     loading,
-  //   });
 
   useEffect(() => {
     isHostRef.current = isHost;
@@ -133,6 +125,7 @@ export default function App() {
   }, []);
 
   const handleHostRoom = (name: string) => {
+    sessionRewardsRef.current = {};
     setPlayerName(name);
     setIsHost(true);
     isHostRef.current = true;
@@ -231,6 +224,7 @@ export default function App() {
   };
 
   const handleJoinRoom = (name: string, code: string) => {
+    sessionRewardsRef.current = {};
     setPlayerName(name);
     setIsHost(false);
     isHostRef.current = false;
@@ -509,13 +503,13 @@ export default function App() {
         score: 5,
       };
     }
-
+    const randomFirstPlayer = Math.floor(Math.random() * dealtPlayers.length);
     const initialGameState: GameState = {
       players: dealtPlayers,
       drawPile: deck,
       discardPile: [topCard],
       activeColor: topCard.color,
-      currentTurnIndex: 0,
+      currentTurnIndex: randomFirstPlayer,
       turnDirection: 1,
       stackCount: 0,
       gameStarted: true,
@@ -1018,14 +1012,21 @@ export default function App() {
     const winner = state.players.find(
       (p) => !p.isKnockedOut && p.cards.length === 0,
     );
+
     if (winner) {
+      addMatchRewards(winner.id, state.players);
+
       state.gameEnded = true;
       state.winnerId = winner.id;
+
       logEntries.push(
         `👑 VICTORY! ${winner.name} has exhausted all cards in hand! Crowned champion of No Mercy.`,
       );
+
       triggerSound("fanfare");
+
       state.log.push(...logEntries);
+
       broadcastState(state);
       return;
     }
@@ -1033,26 +1034,38 @@ export default function App() {
     // 2. Check for only 1 player remaining active (Mercy-ruled winner)
     const activePlayers = state.players.filter((p) => !p.isKnockedOut);
     if (activePlayers.length === 1) {
+      addMatchRewards(activePlayers[0].id, state.players);
+
       state.gameEnded = true;
       state.winnerId = activePlayers[0].id;
+
       logEntries.push(
         `👑 VICTORY BY DEFAULT! All other nobles are knocked out. ${activePlayers[0].name} holds the throne.`,
       );
+
       triggerSound("fanfare");
+
       state.log.push(...logEntries);
+
       broadcastState(state);
+
       return;
     }
 
     if (activePlayers.length === 0) {
-      // In case of double bankruptcy
+      addMatchRewards(state.players[0].id, state.players);
+
       state.gameEnded = true;
       state.winnerId = state.players[0].id;
+
       logEntries.push(
         "Match ended in total bankruptcy! All nobles eliminated.",
       );
+
       state.log.push(...logEntries);
+
       broadcastState(state);
+
       return;
     }
 
@@ -1083,7 +1096,33 @@ export default function App() {
       });
     }
   };
+  const addMatchRewards = (winnerId: string, players: Player[]) => {
+    if (!isMultiplayerRef.current) return;
 
+    players.forEach((player) => {
+      if (!sessionRewardsRef.current[player.id]) {
+        sessionRewardsRef.current[player.id] = {
+          coins: 0,
+          wins: 0,
+          losses: 0,
+          matches: 0,
+        };
+      }
+
+      const reward = sessionRewardsRef.current[player.id];
+
+      reward.matches += 1;
+
+      if (player.id === winnerId) {
+        reward.coins += 50;
+        reward.wins += 1;
+      } else {
+        reward.losses += 1;
+      }
+    });
+
+    console.log("[Session Rewards]", sessionRewardsRef.current);
+  };
   // 5. Automated AI Court Bots Logic
   useEffect(() => {
     if (!isHost || !gameState || gameState.gameEnded) return;
